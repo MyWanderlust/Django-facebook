@@ -40,3 +40,13 @@ class MissingPermissionsError(FacebookException):
     Raised if we lack permissions
     '''
     pass
+
+class AccountNotVerifiedException(Exception):
+    name = None
+    
+
+    '''
+    For Account not verified we're overriding the UI - Atul, MyWanderlust
+    '''
+    def __init__(self, name):
+        self.name = name

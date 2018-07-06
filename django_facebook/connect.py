@@ -52,6 +52,8 @@ def connect_user(request, access_token=None, facebook_graph=None, connect_facebo
 
     assert converter.is_authenticated()
     facebook_data = converter.facebook_profile_data()
+    logger.debug('facebook_data %s', facebook_data)
+    
     force_registration = request.POST.get('force_registration') or \
         request.GET.get('force_registration') or \
         request.POST.get('force_registration_hard') or \
@@ -66,8 +68,12 @@ def connect_user(request, access_token=None, facebook_graph=None, connect_facebo
         # default behaviour is not to overwrite old data
         user = _connect_user(request, converter, overwrite=True)
     else:
+        name = facebook_data.get('name', None)
         email = facebook_data.get('email', False)
-        email_verified = facebook_data.get('verified', False)
+        email_verified = facebook_data.get('verified')
+        if not email_verified:
+            logger.info('overriding email_verified to true. we dont care about this flag.')
+            email_verified = True
         kwargs = {}
         if email and email_verified:
             kwargs = {'facebook_email': email}
@@ -87,6 +93,9 @@ def connect_user(request, access_token=None, facebook_graph=None, connect_facebo
             # login the user
             user = _login_user(request, converter, auth_user, update=update)
         else:
+            logger.info('instead of going for _register_user, raising AccountNotVerifiedException')
+            raise facebook_exceptions.AccountNotVerifiedException(name)
+
             action = CONNECT_ACTIONS.REGISTER
             # when force registration is active we should remove the old
             # profile

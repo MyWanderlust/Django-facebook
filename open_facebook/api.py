@@ -671,7 +671,7 @@ class OpenFacebook(FacebookConnection):
         self.current_user_id = current_user_id
 
         if version is None:
-            version = 'v1.0'
+            version = 'v2.9'
         self.version = version
 
     def __getstate__(self):
@@ -702,6 +702,7 @@ class OpenFacebook(FacebookConnection):
         try:
             me = self.me()
         except facebook_exceptions.OpenFacebookException as e:
+            print('OpenFacebookException', e)
             if isinstance(e, facebook_exceptions.OAuthException):
                 raise
             me = None
@@ -725,6 +726,7 @@ class OpenFacebook(FacebookConnection):
         version = version or self.version
         kwargs['version'] = version
         response = self.request(path, **kwargs)
+        print('response', response)
         return response
 
     def get_many(self, *ids, **kwargs):
@@ -932,6 +934,7 @@ class OpenFacebook(FacebookConnection):
                                    **params)
         logger.info('requesting url %s', url)
         response = self._request(url, post_data)
+        logger.info('response %s', response)
         return response
 
     def get_request_url(self, path='', old_api=False, version=None, **params):
