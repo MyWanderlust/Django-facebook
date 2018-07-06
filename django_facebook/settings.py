@@ -8,8 +8,16 @@ FACEBOOK_APP_ID = getattr(settings, 'FACEBOOK_APP_ID', None)
 # : Your facebook app secret
 FACEBOOK_APP_SECRET = getattr(settings, 'FACEBOOK_APP_SECRET', None)
 # : The default scope we should use, note that registration will break without email
-FACEBOOK_DEFAULT_SCOPE = getattr(settings, 'FACEBOOK_DEFAULT_SCOPE', [
-    'email', 'user_tagged_places', 'user_hometown'])
+
+FACEBOOK_DEFAULT_SCOPE = getattr(
+    settings,
+    'FACEBOOK_DEFAULT_SCOPE',
+    [
+        'email',
+        'user_tagged_places',
+        'user_hometown',
+    ],
+)
 
 # : If we should store likes
 FACEBOOK_STORE_LIKES = getattr(settings, 'FACEBOOK_STORE_LIKES', False)
