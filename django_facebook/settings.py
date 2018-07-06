@@ -60,6 +60,10 @@ FACEBOOK_REGISTRATION_FORM = getattr(settings,
 FACEBOOK_LOGIN_DEFAULT_REDIRECT = getattr(
     settings, 'FACEBOOK_LOGIN_DEFAULT_REDIRECT', '/')
 
+# Overriding account not verified ui
+FACEBOOK_ACCOUNT_NOT_VERIFIED_REDIRECT = getattr(
+    settings, 'FACEBOOK_ACCOUNT_NOT_VERIFIED_REDIRECT', '/login_error/')
+
 # Force profile update every login
 FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = getattr(
     settings, 'FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN', False)

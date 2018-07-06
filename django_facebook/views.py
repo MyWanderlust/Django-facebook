@@ -14,6 +14,7 @@ from django_facebook.utils import next_redirect, get_registration_backend, \
 from open_facebook import exceptions as open_facebook_exceptions
 from open_facebook.utils import send_warning
 import logging
+from django.http.response import HttpResponseRedirect
 
 try:
     unicode = unicode
@@ -94,6 +95,8 @@ def _connect(request, graph):
             ids_string = ','.join(map(str, user_ids))
             additional_params = dict(already_connected=ids_string)
             return backend.post_error(request, additional_params)
+        except facebook_exceptions.AccountNotVerifiedException as e:
+            return HttpResponseRedirect(facebook_settings.FACEBOOK_ACCOUNT_NOT_VERIFIED_REDIRECT+e.name+'/')
 
         response = backend.post_connect(request, user, action)
 
