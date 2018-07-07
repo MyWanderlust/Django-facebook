@@ -75,9 +75,16 @@ def connect_user(request, access_token=None, facebook_graph=None, connect_facebo
             logger.info('overriding email_verified to true. we dont care about this flag.')
             email_verified = True
         kwargs = {}
+        logger.debug('email, email_verified: %s %s', email, email_verified)
         if email and email_verified:
             kwargs = {'facebook_email': email}
+        else:
+            logger.info('raising AccountNotVerifiedException')
+            raise facebook_exceptions.AccountNotVerifiedException(name)
+
+        logger.debug('authenticating %s', facebook_data['id'])
         auth_user = authenticate(facebook_id=facebook_data['id'], **kwargs)
+        logger.debug('auth_user, force_registration: %s %s', auth_user, force_registration)
         if auth_user and not force_registration:
             action = CONNECT_ACTIONS.LOGIN
 
@@ -93,8 +100,7 @@ def connect_user(request, access_token=None, facebook_graph=None, connect_facebo
             # login the user
             user = _login_user(request, converter, auth_user, update=update)
         else:
-            logger.info('instead of going for _register_user, raising AccountNotVerifiedException')
-            raise facebook_exceptions.AccountNotVerifiedException(name)
+            logger.info('going for _register_user')
 
             action = CONNECT_ACTIONS.REGISTER
             # when force registration is active we should remove the old
