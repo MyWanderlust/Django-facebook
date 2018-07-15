@@ -5,11 +5,14 @@ from django_facebook import settings as facebook_settings
 from django_facebook.utils import get_profile_model, is_user_attribute, \
     get_user_model, get_profile
 import operator
+import logging
 
 try:
     reduce = reduce
 except NameError:
     from functools import reduce
+
+logger = logging.getLogger(__name__)
 
 
 class FacebookBackend(backends.ModelBackend):
@@ -33,6 +36,7 @@ class FacebookBackend(backends.ModelBackend):
         customization we are using
         (profile was used in Django < 1.5, user is the new way in 1.5 and up)
         '''
+        logger.info('FacebookBackend authenticate %s %s', facebook_id, facebook_email)
         user_attribute = is_user_attribute('facebook_id')
         if user_attribute:
             user = self.user_authenticate(facebook_id, facebook_email)
@@ -55,12 +59,13 @@ class FacebookBackend(backends.ModelBackend):
 
         :return: The signed in :class:`User`.
         '''
+        logger.info('user_authenticate')
         user_model = get_user_model()
         if facebook_id or facebook_email:
             # match by facebook id or email
             auth_conditions = []
             if facebook_id:
-                auth_conditions.append(Q(facebook_id=facebook_id))
+                auth_conditions.append(Q(profile__facebook_id=facebook_id))
             if facebook_email:
                 auth_conditions.append(Q(email__iexact=facebook_email))
             # or the operations
@@ -70,8 +75,8 @@ class FacebookBackend(backends.ModelBackend):
             users = list(user_model.objects.filter(auth_condition))
 
             # id matches vs email matches
-            id_matches = [u for u in users if u.facebook_id == facebook_id]
-            email_matches = [u for u in users if u.facebook_id != facebook_id]
+            id_matches = [u for u in users if u.profile.facebook_id == facebook_id]
+            email_matches = [u for u in users if u.profile.facebook_id != facebook_id]
 
             # error checking
             if len(id_matches) > 1:
@@ -87,6 +92,9 @@ class FacebookBackend(backends.ModelBackend):
 
             if user and facebook_settings.FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN:
                 user.fb_update_required = True
+                
+            if user:
+                logger.info('returning user %s', user.username)
             return user
 
     def profile_authenticate(self, facebook_id=None, facebook_email=None):
