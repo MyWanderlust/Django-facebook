@@ -93,7 +93,8 @@ class FacebookBackend(backends.ModelBackend):
             if user and facebook_settings.FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN:
                 user.fb_update_required = True
                 
-            logger.info('returning user %s', user.username)
+            if user:
+                logger.info('returning user %s', user.username)
             return user
 
     def profile_authenticate(self, facebook_id=None, facebook_email=None):
