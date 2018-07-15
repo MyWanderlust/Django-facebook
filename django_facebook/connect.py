@@ -70,6 +70,7 @@ def connect_user(request, access_token=None, facebook_graph=None, connect_facebo
     else:
         name = facebook_data.get('name', None)
         email = facebook_data.get('email', False)
+        #email = False
         email_verified = facebook_data.get('verified')
         if not email_verified:
             logger.info('overriding email_verified to true. we dont care about this flag.')
@@ -78,9 +79,6 @@ def connect_user(request, access_token=None, facebook_graph=None, connect_facebo
         logger.debug('email, email_verified: %s %s', email, email_verified)
         if email and email_verified:
             kwargs = {'facebook_email': email}
-        else:
-            logger.info('raising AccountNotVerifiedException')
-            raise facebook_exceptions.AccountNotVerifiedException(name)
 
         logger.debug('authenticating %s', facebook_data['id'])
         auth_user = authenticate(facebook_id=facebook_data['id'], **kwargs)
@@ -101,6 +99,11 @@ def connect_user(request, access_token=None, facebook_graph=None, connect_facebo
             user = _login_user(request, converter, auth_user, update=update)
         else:
             logger.info('going for _register_user')
+            
+            if not email:
+                logger.info('raising AccountNotVerifiedException')
+                raise facebook_exceptions.AccountNotVerifiedException(name)
+
 
             action = CONNECT_ACTIONS.REGISTER
             # when force registration is active we should remove the old
@@ -244,7 +247,8 @@ def _register_user(request, facebook, profile_callback=None,
         data['email'] = data['email'].replace(
             '@', '+test%s@' % randint(0, 1000000000))
         
-    if not data['email']:
+    logger.info('_register_user data %s', data)
+    if not data.get('email'):
         data['email'] = '%s@facebook.com' % data['username'] 
 
     form = form_class(data=data, files=request.FILES,
